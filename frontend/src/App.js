@@ -37,6 +37,8 @@ function App() {
   const [networkInfo, setNetworkInfo] = useState(null);
   const [isResolvingEns, setIsResolvingEns] = useState(false);
   const [ensProvider, setEnsProvider] = useState(null);
+  const [userEnsName, setUserEnsName] = useState(null);
+  const [isLoadingUserEns, setIsLoadingUserEns] = useState(false);
   
   const messagesEndRef = useRef(null);
 
