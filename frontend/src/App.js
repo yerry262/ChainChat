@@ -471,14 +471,23 @@ function App() {
               type="text"
               value={newContactAddress}
               onChange={(e) => setNewContactAddress(e.target.value)}
-              placeholder="Enter wallet address (0x...)"
+              placeholder="Enter wallet address (0x...) or ENS name (alice.eth)"
               className="w-full p-2 border border-gray-300 rounded-lg mb-2 text-sm"
+              disabled={isResolvingEns}
             />
             <button
               onClick={addContact}
-              className="w-full bg-blue-500 text-white py-1 px-3 rounded text-sm hover:bg-blue-600 transition-colors"
+              disabled={isResolvingEns || !newContactAddress.trim()}
+              className="w-full bg-blue-500 text-white py-1 px-3 rounded text-sm hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
-              Add Contact
+              {isResolvingEns ? (
+                <>
+                  <FaSpinner className="animate-spin" />
+                  <span>Resolving ENS...</span>
+                </>
+              ) : (
+                <span>Add Contact</span>
+              )}
             </button>
           </div>
         )}
