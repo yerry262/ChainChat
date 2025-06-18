@@ -676,7 +676,7 @@ function App() {
           <div className="flex-1 flex items-center justify-center bg-gray-50">
             <div className="text-center text-gray-500">
               <FaComments className="text-6xl mx-auto mb-4 opacity-30" />
-              <h3 className="text-lg font-semibold mb-2">Welcome to Web3 Messenger</h3>
+              <h3 className="text-lg font-semibold mb-2">Welcome to ChainChat</h3>
               <p className="mb-4">Select a contact or conversation to start messaging</p>
               <p className="text-sm">All messages are end-to-end encrypted and signed with your wallet</p>
             </div>
