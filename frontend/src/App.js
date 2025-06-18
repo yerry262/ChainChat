@@ -396,9 +396,10 @@ function App() {
             <div className="mb-6 p-4 bg-blue-50 rounded-lg">
               <h3 className="font-semibold text-blue-800 mb-2">Features:</h3>
               <ul className="text-sm text-blue-700 space-y-1 text-left">
-                <li>• End-to-end encrypted messages</li>
+                <li>• End-to-end encrypted messages via XMTP</li>
                 <li>• Wallet-based authentication</li>
                 <li>• Messages signed with your wallet</li>
+                <li>• ENS name support (alice.eth)</li>
                 <li>• Built on Base Sepolia testnet</li>
               </ul>
             </div>
