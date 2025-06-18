@@ -171,7 +171,7 @@ function App() {
       setWalletAddress(address);
 
       // Verify signature with backend
-      const message = `Sign this message to authenticate with Web3 Messenger at ${new Date().toISOString()}`;
+      const message = `Sign this message to authenticate with ChainChat at ${new Date().toISOString()}`;
       const signature = await signer.signMessage(message);
       
       const authResponse = await axios.post(`${API}/auth/verify-signature`, {
