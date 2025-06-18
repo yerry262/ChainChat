@@ -137,15 +137,18 @@ backend:
 
   - task: "Message Metadata Storage"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented message metadata endpoints to store message hashes, timestamps, sender/recipient addresses, and XMTP conversation IDs. Actual messages stored on XMTP network."
+      - working: true
+        agent: "testing"
+        comment: "Successfully tested message metadata storage and retrieval. The system correctly stores message metadata and allows retrieval by wallet address."
 
   - task: "Contact Management System"
     implemented: true
