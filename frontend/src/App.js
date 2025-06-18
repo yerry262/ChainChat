@@ -412,7 +412,7 @@ function App() {
           <div className="text-center">
             <div className="mb-6">
               <FaComments className="text-6xl text-blue-600 mx-auto mb-4" />
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Web3 Messenger</h1>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">ChainChat</h1>
               <p className="text-gray-600">Secure, decentralized messaging powered by XMTP</p>
             </div>
             
