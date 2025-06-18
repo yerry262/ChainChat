@@ -155,7 +155,7 @@ async def get_message_metadata(wallet_address: str):
             {"recipient_address": wallet_address.lower()}
         ]
     }).sort("timestamp", -1).to_list(100)
-    return messages
+    return [serialize_mongo_doc(msg) for msg in messages]
 
 # Contact management endpoints
 @api_router.post("/contacts")
@@ -179,7 +179,7 @@ async def add_contact(contact: Contact):
 async def get_contacts(wallet_address: str):
     """Get contacts for a wallet address"""
     contacts = await db.contacts.find({"owner_address": wallet_address.lower()}).to_list(100)
-    return contacts
+    return [serialize_mongo_doc(contact) for contact in contacts]
 
 @api_router.delete("/contacts/{contact_id}")
 async def delete_contact(contact_id: str):
