@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { ethers } from 'ethers';
 import { Client } from '@xmtp/browser-sdk';
-import { FaWallet, FaRefresh, FaPaperPlane, FaUser, FaComments } from 'react-icons/fa';
+import { FaWallet, FaSync, FaPaperPlane, FaUser, FaComments } from 'react-icons/fa';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
