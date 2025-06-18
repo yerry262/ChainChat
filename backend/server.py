@@ -51,7 +51,7 @@ except Exception as e:
     w3 = Web3(Web3.HTTPProvider(web3_provider_url))
 
 # Create the main app without a prefix
-app = FastAPI(title="Web3 Messenger API", version="1.0.0")
+app = FastAPI(title="ChainChat API", version="1.0.0")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
