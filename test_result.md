@@ -229,7 +229,7 @@ frontend:
         agent: "main"
         comment: "Built responsive chat interface with sidebar for contacts/conversations, message bubbles, real-time message display, and modern styling with Tailwind CSS."
 
-  - task: "Contact Management UI"
+  - task: "Contact Management UI with ENS Support"
     implemented: true
     working: "NA"
     file: "/app/frontend/src/App.js"
@@ -239,7 +239,7 @@ frontend:
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Implemented add contact form, contact list display, contact validation, and conversation initiation from contacts."
+        comment: "Enhanced contact management with ENS support - users can add contacts using ENS names (alice.eth) or wallet addresses. Includes ENS resolution, reverse lookup, and proper display of ENS names in contact list."
 
   - task: "Message Refresh Functionality"
     implemented: true
