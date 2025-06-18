@@ -669,7 +669,7 @@ function App() {
                   <span>Send</span>
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-1">Messages are encrypted and stored on XMTP network</p>
+              <p className="text-xs text-gray-500 mt-1">Messages are encrypted and stored on XMTP network via ChainChat</p>
             </div>
           </>
         ) : (
