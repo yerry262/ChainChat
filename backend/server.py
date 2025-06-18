@@ -221,11 +221,18 @@ async def get_network_info():
 @api_router.get("/health")
 async def health_check():
     """Health check endpoint"""
+    web3_status = "connected"
+    try:
+        if not w3.is_connected():
+            web3_status = "disconnected"
+    except Exception:
+        web3_status = "error"
+        
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow(),
         "database": "connected" if client else "disconnected",
-        "web3": "connected" if w3.is_connected() else "disconnected"
+        "web3": web3_status
     }
 
 @api_router.get("/")
