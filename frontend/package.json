@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@web3modal/ethereum": "^2.7.1",
+    "@web3modal/wagmi": "^5.1.11",
     "@xmtp/browser-sdk": "^2.1.1",
     "axios": "^1.8.4",
     "cra-template": "1.2.0",
@@ -11,7 +13,9 @@
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.5.1",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "viem": "1.21.4",
+    "wagmi": "1.4.13"
   },
   "scripts": {
     "start": "react-scripts start",
