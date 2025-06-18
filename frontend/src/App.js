@@ -48,6 +48,21 @@ function App() {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    // Initialize ENS provider for mainnet (ENS resolution)
+    const initEnsProvider = async () => {
+      try {
+        // Use Infura mainnet for ENS resolution
+        const mainnetProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/4bf26402ae474ff98fb4e4f76ccfc4ba');
+        setEnsProvider(mainnetProvider);
+      } catch (error) {
+        console.error('Failed to initialize ENS provider:', error);
+      }
+    };
+    
+    initEnsProvider();
+  }, []);
+
   // Check if MetaMask is installed
   const isMetaMaskInstalled = () => {
     return typeof window.ethereum !== 'undefined';
