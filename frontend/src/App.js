@@ -456,37 +456,71 @@ function App() {
   }
 
   return (
-    <div className="h-screen bg-gray-100 flex">
-      {/* Sidebar */}
-      <div className="w-1/3 bg-white border-r border-gray-300 flex flex-col">
-        {/* Header */}
-        <div className="p-4 bg-blue-600 text-white">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-xl font-bold">Web3 Messenger</h1>
-            <button
-              onClick={refreshMessages}
-              disabled={isLoading}
-              className="p-2 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
-            >
-              <FaSync className={isLoading ? 'animate-spin' : ''} />
-            </button>
-          </div>
-          <p className="text-sm opacity-90">{formatAddress(walletAddress)}</p>
-          {networkInfo && (
-            <p className="text-xs opacity-75">{networkInfo.network}</p>
-          )}
+    <div className="h-screen bg-gray-100 flex flex-col">
+      {/* Top Header Bar */}
+      <div className="bg-white border-b border-gray-300 px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <FaComments className="text-2xl text-blue-600" />
+          <h1 className="text-xl font-bold text-gray-800">ChainChat</h1>
         </div>
-
-        {/* Add Contact Button */}
-        <div className="p-4 border-b border-gray-200">
+        
+        {/* User Profile Display */}
+        <div className="flex items-center space-x-3">
+          {networkInfo && (
+            <div className="hidden md:flex items-center space-x-2 px-3 py-1 bg-green-100 rounded-full">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-xs text-green-700">{networkInfo.network}</span>
+            </div>
+          )}
+          
+          <div className="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 transition-colors px-4 py-2 rounded-full border">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <FaUser className="text-white text-sm" />
+            </div>
+            <div className="flex flex-col">
+              {isLoadingUserEns ? (
+                <div className="flex items-center space-x-1">
+                  <FaSpinner className="animate-spin text-xs" />
+                  <span className="text-sm text-gray-600">Loading...</span>
+                </div>
+              ) : (
+                <>
+                  <span className="text-sm font-semibold text-gray-800">
+                    {userEnsName || formatAddress(walletAddress)}
+                  </span>
+                  {userEnsName && (
+                    <span className="text-xs text-gray-500">{formatAddress(walletAddress)}</span>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+          
           <button
-            onClick={() => setShowAddContact(!showAddContact)}
-            className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center space-x-2"
+            onClick={refreshMessages}
+            disabled={isLoading}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 text-gray-600"
+            title="Refresh messages"
           >
-            <FaUser />
-            <span>Add Contact</span>
+            <FaSync className={isLoading ? 'animate-spin' : ''} />
           </button>
         </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex">
+        {/* Sidebar */}
+        <div className="w-1/3 bg-white border-r border-gray-300 flex flex-col">
+          {/* Sidebar Header */}
+          <div className="p-4 bg-blue-50 border-b border-gray-200">
+            <button
+              onClick={() => setShowAddContact(!showAddContact)}
+              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2"
+            >
+              <FaUser />
+              <span>Add Contact</span>
+            </button>
+          </div>
 
         {/* Add Contact Form */}
         {showAddContact && (
