@@ -288,7 +288,7 @@ function App() {
 
     try {
       // Sign the message with wallet
-      const messageToSign = `Message: ${newMessage} | Timestamp: ${new Date().toISOString()}`;
+      const messageToSign = `ChainChat Message: ${newMessage} | Timestamp: ${new Date().toISOString()}`;
       const signature = await wallet.signMessage(messageToSign);
       
       // Send message via XMTP
