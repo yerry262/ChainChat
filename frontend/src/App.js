@@ -103,6 +103,24 @@ function App() {
       return null;
     }
   };
+
+  // Load user's ENS name
+  const loadUserEnsName = async (address) => {
+    if (!ensProvider) return;
+    
+    try {
+      setIsLoadingUserEns(true);
+      const ensName = await reverseEnsLookup(address);
+      setUserEnsName(ensName);
+      if (ensName) {
+        console.log(`Found ENS name for user: ${ensName}`);
+      }
+    } catch (error) {
+      console.error('Failed to load user ENS name:', error);
+    } finally {
+      setIsLoadingUserEns(false);
+    }
+  };
   // Check if MetaMask is installed
   const isMetaMaskInstalled = () => {
     return typeof window.ethereum !== 'undefined';
