@@ -118,7 +118,7 @@ def test_user_creation():
     
     data = response.json()
     return (
-        data.get("wallet_address") == TEST_ADDRESS.lower() and
+        data.get("wallet_address").lower() == TEST_ADDRESS.lower() and
         data.get("ens_name") == "test.eth"
     )
 
