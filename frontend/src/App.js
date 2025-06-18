@@ -101,6 +101,7 @@ function App() {
       return null;
     }
   };
+  // Check if MetaMask is installed
   const isMetaMaskInstalled = () => {
     return typeof window.ethereum !== 'undefined';
   };
