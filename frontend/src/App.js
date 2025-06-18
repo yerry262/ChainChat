@@ -370,9 +370,10 @@ function App() {
     }
   };
 
-  // Format address for display
-  const formatAddress = (address) => {
+  // Format address for display (with ENS support)
+  const formatAddress = (address, ensName = null) => {
     if (!address) return '';
+    if (ensName) return ensName;
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
