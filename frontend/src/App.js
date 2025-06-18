@@ -35,6 +35,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [showAddContact, setShowAddContact] = useState(false);
   const [networkInfo, setNetworkInfo] = useState(null);
+  const [isResolvingEns, setIsResolvingEns] = useState(false);
+  const [ensProvider, setEnsProvider] = useState(null);
   
   const messagesEndRef = useRef(null);
 
