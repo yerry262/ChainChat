@@ -122,15 +122,18 @@ backend:
 
   - task: "User Management System"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented user CRUD operations, wallet address storage, ENS name support, and automatic user creation on first authentication."
+      - working: true
+        agent: "testing"
+        comment: "Successfully tested user creation and retrieval endpoints. The system correctly stores and retrieves user information including wallet addresses and ENS names."
 
   - task: "Message Metadata Storage"
     implemented: true
