@@ -272,3 +272,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Completed initial implementation of Web3 messaging app with XMTP integration. Built backend with FastAPI for wallet authentication, user management, message metadata, and contact management. Frontend uses React with XMTP Browser SDK, wallet connection, and chat UI. Key features: MetaMask integration, Base Sepolia testnet, message signing, end-to-end encryption via XMTP, WhatsApp-like interface. Ready for backend testing first, then frontend testing."
+  - agent: "testing"
+    message: "Completed comprehensive testing of backend API endpoints. Fixed MongoDB ObjectId serialization issues and improved Web3 connectivity with fallback mechanisms. All backend endpoints are now working correctly: health check, network info, user management, wallet signature verification, message metadata, and contact management. The backend successfully connects to Base Sepolia testnet (Chain ID: 84532) and properly handles wallet signatures for authentication."
