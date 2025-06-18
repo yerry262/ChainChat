@@ -6,12 +6,28 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 import uuid
 from datetime import datetime
 from web3 import Web3
 from eth_account.messages import encode_defunct
 import json
+from bson import ObjectId
+from fastapi.encoders import jsonable_encoder
+
+# Custom JSON encoder for MongoDB ObjectId
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return super().default(o)
+
+# Helper function to convert MongoDB documents to JSON-serializable format
+def serialize_mongo_doc(doc):
+    if doc is None:
+        return None
+    doc["_id"] = str(doc["_id"])
+    return doc
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
