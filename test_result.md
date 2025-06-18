@@ -107,15 +107,18 @@ user_problem_statement: "Build me a messaging app that's built for web3. The app
 backend:
   - task: "Web3 Authentication with Wallet Signature Verification"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented wallet signature verification endpoint using Web3.py, eth-account for message recovery, and proper signature validation. Supports Base Sepolia testnet configuration."
+      - working: true
+        agent: "testing"
+        comment: "Successfully tested wallet signature verification endpoint. The endpoint correctly verifies signatures and returns the expected response with user information."
 
   - task: "User Management System"
     implemented: true
