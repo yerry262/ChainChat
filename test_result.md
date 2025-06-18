@@ -167,15 +167,18 @@ backend:
 
   - task: "Base Sepolia Network Integration"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Configured Web3 provider with Infura Base Sepolia endpoint, implemented network info endpoint to verify connectivity and chain ID."
+      - working: true
+        agent: "testing"
+        comment: "Successfully tested Base Sepolia network integration. The system correctly connects to the Base Sepolia testnet and provides network information including chain ID (84532)."
 
 frontend:
   - task: "Wallet Connection with MetaMask"
