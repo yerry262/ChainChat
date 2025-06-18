@@ -242,7 +242,7 @@ async def health_check():
 
 @api_router.get("/")
 async def root():
-    return {"message": "Web3 Messenger API", "version": "1.0.0"}
+    return {"message": "ChainChat API", "version": "1.0.0"}
 
 # Include the router in the main app
 app.include_router(api_router)
