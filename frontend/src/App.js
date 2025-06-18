@@ -63,7 +63,44 @@ function App() {
     initEnsProvider();
   }, []);
 
-  // Check if MetaMask is installed
+  // Check if input is an ENS name
+  const isEnsName = (input) => {
+    return input.includes('.') && (input.endsWith('.eth') || input.endsWith('.xyz') || input.endsWith('.com') || input.endsWith('.org'));
+  };
+
+  // Resolve ENS name to address
+  const resolveEnsName = async (ensName) => {
+    if (!ensProvider) {
+      throw new Error('ENS provider not initialized');
+    }
+    
+    try {
+      setIsResolvingEns(true);
+      const address = await ensProvider.resolveName(ensName);
+      if (!address) {
+        throw new Error('ENS name not found');
+      }
+      return address;
+    } catch (error) {
+      console.error('ENS resolution failed:', error);
+      throw new Error(`Failed to resolve ENS name: ${error.message}`);
+    } finally {
+      setIsResolvingEns(false);
+    }
+  };
+
+  // Reverse ENS lookup (address to name)
+  const reverseEnsLookup = async (address) => {
+    if (!ensProvider) return null;
+    
+    try {
+      const ensName = await ensProvider.lookupAddress(address);
+      return ensName;
+    } catch (error) {
+      console.error('Reverse ENS lookup failed:', error);
+      return null;
+    }
+  };
   const isMetaMaskInstalled = () => {
     return typeof window.ethereum !== 'undefined';
   };
