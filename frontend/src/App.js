@@ -506,8 +506,15 @@ function App() {
                     onClick={() => startConversation(contact.contact_address)}
                     className="p-3 hover:bg-gray-100 rounded-lg cursor-pointer border border-gray-200 transition-colors"
                   >
-                    <div className="font-semibold text-sm">{contact.contact_name || formatAddress(contact.contact_address)}</div>
-                    <div className="text-xs text-gray-500">{formatAddress(contact.contact_address)}</div>
+                    <div className="font-semibold text-sm">
+                      {contact.ens_name || contact.contact_name || formatAddress(contact.contact_address)}
+                    </div>
+                    {contact.ens_name && (
+                      <div className="text-xs text-gray-500">{formatAddress(contact.contact_address)}</div>
+                    )}
+                    {!contact.ens_name && (
+                      <div className="text-xs text-gray-500">{formatAddress(contact.contact_address)}</div>
+                    )}
                   </div>
                 ))}
               </div>
