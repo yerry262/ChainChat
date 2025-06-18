@@ -121,6 +121,7 @@ function App() {
       setIsLoadingUserEns(false);
     }
   };
+
   // Check if MetaMask is installed
   const isMetaMaskInstalled = () => {
     return typeof window.ethereum !== 'undefined';
@@ -522,166 +523,167 @@ function App() {
             </button>
           </div>
 
-        {/* Add Contact Form */}
-        {showAddContact && (
-          <div className="p-4 border-b border-gray-200 bg-gray-50">
-            <input
-              type="text"
-              value={newContactAddress}
-              onChange={(e) => setNewContactAddress(e.target.value)}
-              placeholder="Enter wallet address (0x...) or ENS name (alice.eth)"
-              className="w-full p-2 border border-gray-300 rounded-lg mb-2 text-sm"
-              disabled={isResolvingEns}
-            />
-            <button
-              onClick={addContact}
-              disabled={isResolvingEns || !newContactAddress.trim()}
-              className="w-full bg-blue-500 text-white py-1 px-3 rounded text-sm hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-            >
-              {isResolvingEns ? (
-                <>
-                  <FaSpinner className="animate-spin" />
-                  <span>Resolving ENS...</span>
-                </>
+          {/* Add Contact Form */}
+          {showAddContact && (
+            <div className="p-4 border-b border-gray-200 bg-gray-50">
+              <input
+                type="text"
+                value={newContactAddress}
+                onChange={(e) => setNewContactAddress(e.target.value)}
+                placeholder="Enter wallet address (0x...) or ENS name (alice.eth)"
+                className="w-full p-2 border border-gray-300 rounded-lg mb-2 text-sm"
+                disabled={isResolvingEns}
+              />
+              <button
+                onClick={addContact}
+                disabled={isResolvingEns || !newContactAddress.trim()}
+                className="w-full bg-blue-500 text-white py-1 px-3 rounded text-sm hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              >
+                {isResolvingEns ? (
+                  <>
+                    <FaSpinner className="animate-spin" />
+                    <span>Resolving ENS...</span>
+                  </>
+                ) : (
+                  <span>Add Contact</span>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Contacts/Conversations List */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-3">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">Contacts</h3>
+              {contacts.length === 0 ? (
+                <p className="text-gray-500 text-sm">No contacts yet. Add one above!</p>
               ) : (
-                <span>Add Contact</span>
-              )}
-            </button>
-          </div>
-        )}
-
-        {/* Contacts/Conversations List */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-3">
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">Contacts</h3>
-            {contacts.length === 0 ? (
-              <p className="text-gray-500 text-sm">No contacts yet. Add one above!</p>
-            ) : (
-              <div className="space-y-2">
-                {contacts.map((contact) => (
-                  <div
-                    key={contact.id}
-                    onClick={() => startConversation(contact.contact_address)}
-                    className="p-3 hover:bg-gray-100 rounded-lg cursor-pointer border border-gray-200 transition-colors"
-                  >
-                    <div className="font-semibold text-sm">
-                      {contact.ens_name || contact.contact_name || formatAddress(contact.contact_address)}
+                <div className="space-y-2">
+                  {contacts.map((contact) => (
+                    <div
+                      key={contact.id}
+                      onClick={() => startConversation(contact.contact_address)}
+                      className="p-3 hover:bg-gray-100 rounded-lg cursor-pointer border border-gray-200 transition-colors"
+                    >
+                      <div className="font-semibold text-sm">
+                        {contact.ens_name || contact.contact_name || formatAddress(contact.contact_address)}
+                      </div>
+                      {contact.ens_name && (
+                        <div className="text-xs text-gray-500">{formatAddress(contact.contact_address)}</div>
+                      )}
+                      {!contact.ens_name && (
+                        <div className="text-xs text-gray-500">{formatAddress(contact.contact_address)}</div>
+                      )}
                     </div>
-                    {contact.ens_name && (
-                      <div className="text-xs text-gray-500">{formatAddress(contact.contact_address)}</div>
-                    )}
-                    {!contact.ens_name && (
-                      <div className="text-xs text-gray-500">{formatAddress(contact.contact_address)}</div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          <div className="p-3 border-t border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">Recent Conversations</h3>
-            {conversations.length === 0 ? (
-              <p className="text-gray-500 text-sm">No conversations yet</p>
-            ) : (
-              <div className="space-y-2">
-                {conversations.map((convo) => (
-                  <div
-                    key={convo.topic}
-                    onClick={() => {
-                      setSelectedConversation(convo);
-                      loadMessages(convo);
-                    }}
-                    className={`p-3 rounded-lg cursor-pointer border transition-colors ${
-                      selectedConversation?.topic === convo.topic 
-                        ? 'bg-blue-100 border-blue-300' 
-                        : 'hover:bg-gray-100 border-gray-200'
-                    }`}
-                  >
-                    <div className="font-semibold text-sm">{formatAddress(convo.peerAddress)}</div>
-                    <div className="text-xs text-gray-500">Click to load messages</div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="p-3 border-t border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">Recent Conversations</h3>
+              {conversations.length === 0 ? (
+                <p className="text-gray-500 text-sm">No conversations yet</p>
+              ) : (
+                <div className="space-y-2">
+                  {conversations.map((convo) => (
+                    <div
+                      key={convo.topic}
+                      onClick={() => {
+                        setSelectedConversation(convo);
+                        loadMessages(convo);
+                      }}
+                      className={`p-3 rounded-lg cursor-pointer border transition-colors ${
+                        selectedConversation?.topic === convo.topic 
+                          ? 'bg-blue-100 border-blue-300' 
+                          : 'hover:bg-gray-100 border-gray-200'
+                      }`}
+                    >
+                      <div className="font-semibold text-sm">{formatAddress(convo.peerAddress)}</div>
+                      <div className="text-xs text-gray-500">Click to load messages</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {selectedConversation ? (
-          <>
-            {/* Chat Header */}
-            <div className="p-4 bg-white border-b border-gray-300">
-              <h2 className="font-semibold">Chat with {formatAddress(selectedConversation.peerAddress)}</h2>
-              <p className="text-sm text-gray-500">End-to-end encrypted via XMTP</p>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-              {messages.length === 0 ? (
-                <div className="text-center text-gray-500 mt-10">
-                  <FaComments className="text-4xl mx-auto mb-2 opacity-50" />
-                  <p>No messages yet. Start the conversation!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {messages.map((message, index) => {
-                    const isOwn = message.senderAddress.toLowerCase() === walletAddress.toLowerCase();
-                    return (
-                      <div key={index} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
-                          isOwn 
-                            ? 'bg-blue-500 text-white' 
-                            : 'bg-white text-gray-800 border border-gray-200'
-                        }`}>
-                          <p className="text-sm">{message.content}</p>
-                          <p className={`text-xs mt-1 ${isOwn ? 'text-blue-200' : 'text-gray-500'}`}>
-                            {formatTime(message.sent)}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div ref={messagesEndRef} />
-                </div>
-              )}
-            </div>
-
-            {/* Message Input */}
-            <div className="p-4 bg-white border-t border-gray-300">
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' ? sendMessage() : null}
-                  placeholder="Type your message... (will be signed with your wallet)"
-                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                  onClick={sendMessage}
-                  disabled={!newMessage.trim()}
-                  className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-                >
-                  <FaPaperPlane />
-                  <span>Send</span>
-                </button>
+        {/* Chat Area */}
+        <div className="flex-1 flex flex-col">
+          {selectedConversation ? (
+            <>
+              {/* Chat Header */}
+              <div className="p-4 bg-white border-b border-gray-300">
+                <h2 className="font-semibold">Chat with {formatAddress(selectedConversation.peerAddress)}</h2>
+                <p className="text-sm text-gray-500">End-to-end encrypted via XMTP</p>
               </div>
-              <p className="text-xs text-gray-500 mt-1">Messages are encrypted and stored on XMTP network via ChainChat</p>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+                {messages.length === 0 ? (
+                  <div className="text-center text-gray-500 mt-10">
+                    <FaComments className="text-4xl mx-auto mb-2 opacity-50" />
+                    <p>No messages yet. Start the conversation!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {messages.map((message, index) => {
+                      const isOwn = message.senderAddress.toLowerCase() === walletAddress.toLowerCase();
+                      return (
+                        <div key={index} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                            isOwn 
+                              ? 'bg-blue-500 text-white' 
+                              : 'bg-white text-gray-800 border border-gray-200'
+                          }`}>
+                            <p className="text-sm">{message.content}</p>
+                            <p className={`text-xs mt-1 ${isOwn ? 'text-blue-200' : 'text-gray-500'}`}>
+                              {formatTime(message.sent)}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+                  </div>
+                )}
+              </div>
+
+              {/* Message Input */}
+              <div className="p-4 bg-white border-t border-gray-300">
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' ? sendMessage() : null}
+                    placeholder="Type your message... (will be signed with your wallet)"
+                    className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button
+                    onClick={sendMessage}
+                    disabled={!newMessage.trim()}
+                    className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                  >
+                    <FaPaperPlane />
+                    <span>Send</span>
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Messages are encrypted and stored on XMTP network via ChainChat</p>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center bg-gray-50">
+              <div className="text-center text-gray-500">
+                <FaComments className="text-6xl mx-auto mb-4 opacity-30" />
+                <h3 className="text-lg font-semibold mb-2">Welcome to ChainChat</h3>
+                <p className="mb-4">Select a contact or conversation to start messaging</p>
+                <p className="text-sm">All messages are end-to-end encrypted and signed with your wallet</p>
+              </div>
             </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center bg-gray-50">
-            <div className="text-center text-gray-500">
-              <FaComments className="text-6xl mx-auto mb-4 opacity-30" />
-              <h3 className="text-lg font-semibold mb-2">Welcome to ChainChat</h3>
-              <p className="mb-4">Select a contact or conversation to start messaging</p>
-              <p className="text-sm">All messages are end-to-end encrypted and signed with your wallet</p>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
