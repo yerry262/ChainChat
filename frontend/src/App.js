@@ -290,24 +290,66 @@ function App() {
 
   // Add contact
   const addContact = async () => {
-    if (!newContactAddress.trim() || !ethers.utils.isAddress(newContactAddress)) {
-      alert('Please enter a valid Ethereum address');
+    if (!newContactAddress.trim()) {
+      alert('Please enter a wallet address or ENS name');
       return;
     }
 
     try {
+      setIsResolvingEns(true);
+      let contactAddress = newContactAddress.trim();
+      let contactName = newContactAddress.trim();
+      let ensName = null;
+
+      // Check if it's an ENS name
+      if (isEnsName(contactAddress)) {
+        try {
+          // Resolve ENS name to address
+          const resolvedAddress = await resolveEnsName(contactAddress);
+          ensName = contactAddress;
+          contactAddress = resolvedAddress;
+          contactName = ensName; // Use ENS name as display name
+          console.log(`Resolved ${ensName} to ${contactAddress}`);
+        } catch (error) {
+          alert(`Failed to resolve ENS name: ${error.message}`);
+          return;
+        }
+      } else if (ethers.utils.isAddress(contactAddress)) {
+        // It's a regular address, try reverse ENS lookup
+        try {
+          const reversedEns = await reverseEnsLookup(contactAddress);
+          if (reversedEns) {
+            ensName = reversedEns;
+            contactName = ensName;
+            console.log(`Found ENS name ${ensName} for address ${contactAddress}`);
+          } else {
+            contactName = contactAddress.slice(0, 6) + '...' + contactAddress.slice(-4);
+          }
+        } catch (error) {
+          console.log('No ENS name found for address');
+          contactName = contactAddress.slice(0, 6) + '...' + contactAddress.slice(-4);
+        }
+      } else {
+        alert('Please enter a valid Ethereum address or ENS name');
+        return;
+      }
+
+      // Add contact to backend
       await axios.post(`${API}/contacts`, {
         owner_address: walletAddress,
-        contact_address: newContactAddress,
-        contact_name: newContactAddress.slice(0, 6) + '...' + newContactAddress.slice(-4)
+        contact_address: contactAddress,
+        contact_name: contactName,
+        ens_name: ensName
       });
 
       setNewContactAddress('');
       await loadContacts(walletAddress);
-      alert('Contact added successfully!');
+      alert(`Contact added successfully! ${ensName ? `(${ensName} → ${formatAddress(contactAddress)})` : ''}`);
     } catch (error) {
       console.error('Failed to add contact:', error);
       alert('Failed to add contact: ' + error.message);
+    } finally {
+      setIsResolvingEns(false);
     }
   };
 
