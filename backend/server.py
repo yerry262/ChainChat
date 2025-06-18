@@ -39,7 +39,16 @@ db = client[os.environ['DB_NAME']]
 
 # Web3 setup for Base Sepolia
 infura_url = os.environ.get('INFURA_BASE_SEPOLIA_URL')
-w3 = Web3(Web3.HTTPProvider(infura_url))
+web3_provider_url = os.environ.get('WEB3_PROVIDER_URL', 'https://sepolia.base.org')
+
+# Try Infura first, fallback to public endpoint
+try:
+    w3 = Web3(Web3.HTTPProvider(infura_url))
+    if not w3.is_connected():
+        w3 = Web3(Web3.HTTPProvider(web3_provider_url))
+except Exception as e:
+    logging.warning(f"Failed to connect to Infura: {str(e)}. Using public endpoint.")
+    w3 = Web3(Web3.HTTPProvider(web3_provider_url))
 
 # Create the main app without a prefix
 app = FastAPI(title="Web3 Messenger API", version="1.0.0")
