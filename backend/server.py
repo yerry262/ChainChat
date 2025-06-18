@@ -86,6 +86,7 @@ class Contact(BaseModel):
     owner_address: str
     contact_address: str
     contact_name: Optional[str] = None
+    ens_name: Optional[str] = None
     added_at: datetime = Field(default_factory=datetime.utcnow)
 
 # Authentication endpoints
