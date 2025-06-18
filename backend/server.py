@@ -131,13 +131,13 @@ async def get_user(wallet_address: str):
     user = await db.users.find_one({"wallet_address": wallet_address.lower()})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    return serialize_mongo_doc(user)
 
 @api_router.get("/users")
 async def get_all_users():
     """Get all users (for development purposes)"""
     users = await db.users.find().to_list(100)
-    return users
+    return [serialize_mongo_doc(user) for user in users]
 
 # Message metadata endpoints
 @api_router.post("/messages/metadata")
