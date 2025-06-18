@@ -346,7 +346,7 @@ function App() {
               disabled={isLoading}
               className="p-2 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
             >
-              <FaRefresh className={isLoading ? 'animate-spin' : ''} />
+              <FaSync className={isLoading ? 'animate-spin' : ''} />
             </button>
           </div>
           <p className="text-sm opacity-90">{formatAddress(walletAddress)}</p>
