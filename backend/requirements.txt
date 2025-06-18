@@ -23,3 +23,8 @@ numpy>=1.26.0
 python-multipart>=0.0.9
 jq>=1.6.0
 typer>=0.9.0
+web3==6.15.1
+xmtp-python==0.7.0  
+eth-account==0.10.0
+cryptography==42.0.5
+pydantic[email]==2.6.4
