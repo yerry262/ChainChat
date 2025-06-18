@@ -150,7 +150,7 @@ backend:
         agent: "testing"
         comment: "Successfully tested message metadata storage and retrieval. The system correctly stores message metadata and allows retrieval by wallet address."
 
-  - task: "Contact Management System"
+  - task: "Contact Management System with ENS Support"
     implemented: true
     working: true
     file: "/app/backend/server.py"
@@ -164,6 +164,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "Successfully tested contact CRUD operations. The system correctly adds, retrieves, and deletes contacts with proper validation for duplicates."
+      - working: true
+        agent: "main"
+        comment: "Enhanced contact model to support ENS names. Added ens_name field to store ENS names alongside wallet addresses."
 
   - task: "Base Sepolia Network Integration"
     implemented: true
