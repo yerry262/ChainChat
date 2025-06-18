@@ -166,6 +166,9 @@ function App() {
         // Initialize XMTP client
         await initializeXMTP(signer);
         
+        // Load user's ENS name
+        await loadUserEnsName(address);
+        
         // Load contacts
         await loadContacts(address);
         
