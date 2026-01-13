@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/ChainChat/static/css/main.b64fea99.css",
+    "main.js": "/ChainChat/static/js/main.1a8cea9e.js",
+    "static/js/137.2699a5e2.chunk.js": "/ChainChat/static/js/137.2699a5e2.chunk.js",
+    "static/js/318.62ed0729.chunk.js": "/ChainChat/static/js/318.62ed0729.chunk.js",
+    "static/media/user_preferences_bindings_wasm_bg.wasm": "/ChainChat/static/media/user_preferences_bindings_wasm_bg.5b66183432e2ef252edc.wasm",
+    "index.html": "/ChainChat/index.html"
+  },
+  "entrypoints": [
+    "static/css/main.b64fea99.css",
+    "static/js/main.1a8cea9e.js"
+  ]
+}
