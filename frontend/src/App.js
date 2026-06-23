@@ -6,6 +6,17 @@ import { FaWallet, FaSync, FaPaperPlane, FaUser, FaComments, FaSpinner, FaTrash,
 // XMTP Network options - 'production' for mainnet, 'dev' for testing
 const XMTP_ENV = 'production';
 
+// Public Ethereum mainnet RPC endpoints used for ENS resolution.
+// The first that responds successfully is used. The previous Alchemy
+// "demo" key is heavily rate-limited and frequently returns errors,
+// which silently broke ENS resolution, so we use reliable public nodes
+// with automatic fallback instead.
+const ENS_RPC_URLS = [
+  'https://ethereum-rpc.publicnode.com',
+  'https://cloudflare-eth.com',
+  'https://rpc.ankr.com/eth',
+];
+
 function App() {
   // State management
   const [wallet, setWallet] = useState(null);
@@ -27,7 +38,10 @@ function App() {
   const [isLoadingUserEns, setIsLoadingUserEns] = useState(false);
   const [xmtpError, setXmtpError] = useState(null);
   const [isSending, setIsSending] = useState(false);
-  
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
+
   const messagesEndRef = useRef(null);
   const streamRef = useRef(null);
 
@@ -39,19 +53,29 @@ function App() {
     scrollToBottom();
   }, [messages]);
 
-  // Initialize ENS provider for mainnet
+  // Initialize ENS provider for mainnet, trying each RPC until one works
   useEffect(() => {
+    let cancelled = false;
     const initEnsProvider = async () => {
-      try {
-        const mainnetProvider = new ethers.providers.JsonRpcProvider(
-          'https://eth-mainnet.g.alchemy.com/v2/demo'
-        );
-        setEnsProvider(mainnetProvider);
-      } catch (error) {
-        console.error('Failed to initialize ENS provider:', error);
+      for (const url of ENS_RPC_URLS) {
+        try {
+          const mainnetProvider = new ethers.providers.JsonRpcProvider(url);
+          // Verify the endpoint actually responds before committing to it
+          await mainnetProvider.getNetwork();
+          if (!cancelled) {
+            setEnsProvider(mainnetProvider);
+          }
+          return;
+        } catch (error) {
+          console.warn(`ENS RPC ${url} unavailable, trying next:`, error.message);
+        }
       }
+      console.error('Failed to initialize any ENS provider');
     };
     initEnsProvider();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Load contacts from localStorage when wallet connects
@@ -69,6 +93,45 @@ function App() {
       }
     };
   }, []);
+
+  // Track viewport size so the responsive layout updates on resize/rotate.
+  // Previously window.innerWidth was read inline in render, so the layout
+  // never recalculated when the window changed size.
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // React to wallet account / network changes from MetaMask so the app
+  // doesn't keep operating with stale credentials after the user switches.
+  useEffect(() => {
+    if (!window.ethereum?.on) return;
+
+    const handleAccountsChanged = (accounts) => {
+      if (!accounts || accounts.length === 0) {
+        // User disconnected all accounts from the dApp
+        disconnectWallet();
+      } else if (walletAddress && accounts[0].toLowerCase() !== walletAddress.toLowerCase()) {
+        // Switched to a different account: reset and reconnect cleanly
+        disconnectWallet();
+      }
+    };
+
+    const handleChainChanged = async () => {
+      // Refresh the displayed network without forcing a reconnect
+      const netInfo = await getCurrentNetwork();
+      setNetworkInfo(netInfo);
+    };
+
+    window.ethereum.on('accountsChanged', handleAccountsChanged);
+    window.ethereum.on('chainChanged', handleChainChanged);
+
+    return () => {
+      window.ethereum.removeListener?.('accountsChanged', handleAccountsChanged);
+      window.ethereum.removeListener?.('chainChanged', handleChainChanged);
+    };
+  }, [walletAddress]);
 
   // Check if input is an ENS name
   const isEnsName = (input) => {
@@ -276,6 +339,13 @@ function App() {
       
       const conversation = await xmtpClient.conversations.newConversation(contactAddress);
       setSelectedConversation(conversation);
+
+      // Surface the conversation in the sidebar list right away instead of
+      // waiting for a manual refresh.
+      setConversations(prev =>
+        prev.some(c => c.topic === conversation.topic) ? prev : [...prev, conversation]
+      );
+
       await loadMessages(conversation);
       setShowAddContact(false);
       
@@ -469,6 +539,16 @@ function App() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  // Safely render message content. XMTP messages with unsupported content
+  // types (attachments, reactions, etc.) have no text `content`, which would
+  // otherwise render as an empty bubble. Fall back to the human-readable
+  // fallback text or a generic placeholder.
+  const getMessageText = (message) => {
+    if (typeof message.content === 'string') return message.content;
+    if (typeof message.contentFallback === 'string') return message.contentFallback;
+    return '[Unsupported message]';
+  };
+
   // Format timestamp
   const formatTime = (timestamp) => {
     return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -621,8 +701,8 @@ function App() {
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
-        <div className="w-full md:w-80 bg-white border-r border-gray-300 flex flex-col" 
-             style={{ display: selectedConversation && window.innerWidth < 768 ? 'none' : 'flex' }}>
+        <div className="w-full md:w-80 bg-white border-r border-gray-300 flex flex-col"
+             style={{ display: selectedConversation && isMobile ? 'none' : 'flex' }}>
           {/* Sidebar Header */}
           <div className="p-4 bg-blue-50 border-b border-gray-200">
             <button
@@ -644,7 +724,7 @@ function App() {
                 placeholder="0x... or alice.eth"
                 className="w-full p-2 border border-gray-300 rounded-lg mb-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isResolvingEns}
-                onKeyPress={(e) => e.key === 'Enter' && addContact()}
+                onKeyDown={(e) => e.key === 'Enter' && addContact()}
               />
               <button
                 onClick={addContact}
@@ -738,8 +818,8 @@ function App() {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col" 
-             style={{ display: !selectedConversation && window.innerWidth < 768 ? 'none' : 'flex' }}>
+        <div className="flex-1 flex flex-col"
+             style={{ display: !selectedConversation && isMobile ? 'none' : 'flex' }}>
           {selectedConversation ? (
             <>
               {/* Chat Header */}
@@ -785,7 +865,7 @@ function App() {
                                 ? 'bg-blue-500 text-white' 
                                 : 'bg-white text-gray-800 border border-gray-200'
                             }`}>
-                              <p className="text-sm break-words">{message.content}</p>
+                              <p className="text-sm break-words whitespace-pre-wrap">{getMessageText(message)}</p>
                               <p className={`text-xs mt-1 ${isOwn ? 'text-blue-200' : 'text-gray-500'}`}>
                                 {formatTime(message.sent)}
                               </p>
@@ -806,7 +886,7 @@ function App() {
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && !isSending && sendMessage()}
+                    onKeyDown={(e) => e.key === 'Enter' && !isSending && sendMessage()}
                     placeholder="Type your message..."
                     className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={isSending}
