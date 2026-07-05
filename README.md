@@ -23,7 +23,7 @@ A decentralized messaging application built on Ethereum, powered by the [XMTP Pr
 ## Technology Stack
 
 - **Frontend:** React 18, TailwindCSS
-- **Messaging Protocol:** [XMTP](https://xmtp.org) - Decentralized messaging
+- **Messaging Protocol:** [XMTP V3](https://xmtp.org) via `@xmtp/browser-sdk` (MLS-based; the legacy V2 network was sunset in June 2025)
 - **Wallet Integration:** ethers.js
 - **ENS Resolution:** Ethereum Name Service support
 - **Storage:** Browser localStorage for contacts, XMTP for messages

@@ -89,7 +89,7 @@ function App() {
   useEffect(() => {
     return () => {
       if (streamRef.current) {
-        streamRef.current.return?.();
+        streamRef.current.end?.();
       }
     };
   }, []);
@@ -266,7 +266,7 @@ function App() {
       setNetworkInfo(netInfo);
 
       // Initialize XMTP client
-      await initializeXMTP(signer);
+      await initializeXMTP(signer, address);
       
       // Load user's ENS name
       await loadUserEnsName(address);
@@ -279,42 +279,68 @@ function App() {
     }
   };
 
-  // Initialize XMTP client
-  const initializeXMTP = async (signer) => {
+  // Build an XMTP V3 EOA signer from an ethers signer. The SDK requires
+  // signMessage to return raw signature bytes, not the hex string ethers gives.
+  const buildXmtpSigner = (signer, address, IdentifierKind) => ({
+    type: 'EOA',
+    getIdentifier: () => ({ identifier: address.toLowerCase(), identifierKind: IdentifierKind.Ethereum }),
+    signMessage: async (message) => {
+      const sig = await signer.signMessage(message);
+      return ethers.utils.arrayify(sig);
+    },
+  });
+
+  // Initialize XMTP client (V3 browser SDK — the V2 network was sunset June 2025)
+  const initializeXMTP = async (signer, address) => {
     try {
       console.log('Initializing XMTP client...');
       setXmtpError(null);
-      
-      // Dynamic import of XMTP
-      const { Client } = await import('@xmtp/xmtp-js');
-      
+
+      // Dynamic import keeps the wasm-backed SDK out of the initial bundle
+      const { Client, IdentifierKind } = await import('@xmtp/browser-sdk');
+
       // Create XMTP client - user needs to sign to authenticate
-      const client = await Client.create(signer, { env: XMTP_ENV });
+      const client = await Client.create(buildXmtpSigner(signer, address, IdentifierKind), { env: XMTP_ENV });
       setXmtpClient(client);
-      
+
       // Load existing conversations
       await loadConversations(client);
-      
+
       console.log('XMTP client initialized successfully');
-      console.log('XMTP address:', client.address);
-      
+      console.log('XMTP inbox id:', client.inboxId);
+
     } catch (error) {
       console.error('Failed to initialize XMTP:', error);
       setXmtpError(error.message);
-      
-      // If XMTP fails, still allow using the app for contact management
-      if (error.message.includes('not registered')) {
-        setXmtpError('Your wallet is not yet registered with XMTP. You will be prompted to sign a message to register.');
-      }
     }
   };
 
-  // Load conversations
+  // Resolve a display label (Ethereum address) for a DM's peer. V3 keys
+  // conversations by inbox id, so we look up the peer member's identifier.
+  const dmPeerLabel = async (client, dm) => {
+    try {
+      const peerInboxId = await dm.peerInboxId();
+      const members = await dm.members();
+      const peer = members.find((m) => m.inboxId === peerInboxId);
+      const ethId = peer?.accountIdentifiers?.find(
+        (i) => String(i.identifierKind).toLowerCase().includes('eth') || i.identifierKind === 0
+      ) || peer?.accountIdentifiers?.[0];
+      return ethId?.identifier || peerInboxId;
+    } catch {
+      return 'unknown peer';
+    }
+  };
+
+  // Load conversations (DMs) from the XMTP network
   const loadConversations = async (client) => {
     try {
-      const convos = await client.conversations.list();
-      setConversations(convos);
-      console.log(`Loaded ${convos.length} conversations`);
+      await client.conversations.syncAll();
+      const dms = await client.conversations.listDms();
+      const wrapped = await Promise.all(
+        dms.map(async (dm) => ({ id: dm.id, dm, peerLabel: await dmPeerLabel(client, dm) }))
+      );
+      setConversations(wrapped);
+      console.log(`Loaded ${wrapped.length} conversations`);
     } catch (error) {
       console.error('Failed to load conversations:', error);
     }
@@ -329,29 +355,33 @@ function App() {
 
     try {
       setIsLoading(true);
-      
-      // Check if the recipient can receive XMTP messages
-      const canMessage = await xmtpClient.canMessage(contactAddress);
+
+      // Check if the recipient is reachable on the XMTP (V3) network
+      const { Client, IdentifierKind } = await import('@xmtp/browser-sdk');
+      const identifier = { identifier: contactAddress.toLowerCase(), identifierKind: IdentifierKind.Ethereum };
+      const reachable = await Client.canMessage([identifier], XMTP_ENV);
+      const canMessage = [...reachable.values()].some(Boolean);
       if (!canMessage) {
         alert(`${contactAddress.slice(0, 8)}... is not on the XMTP network yet. They need to connect to an XMTP-enabled app first.`);
         return;
       }
-      
-      const conversation = await xmtpClient.conversations.newConversation(contactAddress);
-      setSelectedConversation(conversation);
+
+      const dm = await xmtpClient.conversations.createDmWithIdentifier(identifier);
+      const wrapped = { id: dm.id, dm, peerLabel: contactAddress };
+      setSelectedConversation(wrapped);
 
       // Surface the conversation in the sidebar list right away instead of
       // waiting for a manual refresh.
       setConversations(prev =>
-        prev.some(c => c.topic === conversation.topic) ? prev : [...prev, conversation]
+        prev.some(c => c.id === wrapped.id) ? prev : [...prev, wrapped]
       );
 
-      await loadMessages(conversation);
+      await loadMessages(wrapped);
       setShowAddContact(false);
-      
+
       // Start streaming messages for this conversation
-      startMessageStream(conversation);
-      
+      startMessageStream(wrapped);
+
     } catch (error) {
       console.error('Failed to start conversation:', error);
       alert('Failed to start conversation: ' + error.message);
@@ -361,17 +391,18 @@ function App() {
   };
 
   // Start message stream for real-time updates
-  const startMessageStream = async (conversation) => {
+  const startMessageStream = async (wrapped) => {
     // Cancel any existing stream
     if (streamRef.current) {
-      streamRef.current.return?.();
+      streamRef.current.end?.();
     }
-    
+
     try {
-      const stream = await conversation.streamMessages();
+      const stream = await wrapped.dm.stream();
       streamRef.current = stream;
-      
+
       for await (const message of stream) {
+        if (!message) continue;
         setMessages(prev => {
           // Avoid duplicates
           if (prev.some(m => m.id === message.id)) {
@@ -386,11 +417,13 @@ function App() {
     }
   };
 
-  // Load messages for selected conversation
-  const loadMessages = async (conversation) => {
+  // Load messages for selected conversation. Filters out non-displayable
+  // protocol messages (e.g. the membership-change message every DM starts with).
+  const loadMessages = async (wrapped) => {
     try {
-      const msgs = await conversation.messages();
-      setMessages(msgs);
+      await wrapped.dm.sync();
+      const msgs = await wrapped.dm.messages();
+      setMessages(msgs.filter((m) => typeof m.content === 'string' || typeof m.fallback === 'string'));
     } catch (error) {
       console.error('Failed to load messages:', error);
     }
@@ -405,8 +438,8 @@ function App() {
     setIsSending(true);
     try {
       // Send message via XMTP
-      await selectedConversation.send(newMessage);
-      
+      await selectedConversation.dm.sendText(newMessage);
+
       // Clear input and reload messages
       setNewMessage('');
       await loadMessages(selectedConversation);
@@ -518,7 +551,7 @@ function App() {
   // Disconnect wallet
   const disconnectWallet = () => {
     if (streamRef.current) {
-      streamRef.current.return?.();
+      streamRef.current.end?.();
     }
     setWallet(null);
     setWalletAddress('');
@@ -545,7 +578,7 @@ function App() {
   // fallback text or a generic placeholder.
   const getMessageText = (message) => {
     if (typeof message.content === 'string') return message.content;
-    if (typeof message.contentFallback === 'string') return message.contentFallback;
+    if (typeof message.fallback === 'string') return message.fallback;
     return '[Unsupported message]';
   };
 
@@ -690,7 +723,7 @@ function App() {
         <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-2 text-sm text-yellow-800">
           ⚠️ {xmtpError}
           <button 
-            onClick={() => initializeXMTP(wallet)} 
+            onClick={() => initializeXMTP(wallet, walletAddress)} 
             className="ml-2 underline hover:no-underline"
           >
             Retry
@@ -795,19 +828,19 @@ function App() {
                 <div className="space-y-2">
                   {conversations.map((convo) => (
                     <div
-                      key={convo.topic}
+                      key={convo.id}
                       onClick={() => {
                         setSelectedConversation(convo);
                         loadMessages(convo);
                         startMessageStream(convo);
                       }}
                       className={`p-3 rounded-lg cursor-pointer border transition-colors ${
-                        selectedConversation?.topic === convo.topic 
+                        selectedConversation?.id === convo.id 
                           ? 'bg-blue-100 border-blue-300' 
                           : 'hover:bg-gray-100 border-gray-200'
                       }`}
                     >
-                      <div className="font-semibold text-sm">{formatAddress(convo.peerAddress)}</div>
+                      <div className="font-semibold text-sm">{formatAddress(convo.peerLabel)}</div>
                       <div className="text-xs text-gray-500">Click to load messages</div>
                     </div>
                   ))}
@@ -826,7 +859,7 @@ function App() {
               <div className="p-4 bg-white border-b border-gray-300 flex items-center justify-between">
                 <div>
                   <h2 className="font-semibold text-gray-800">
-                    Chat with {formatAddress(selectedConversation.peerAddress)}
+                    Chat with {formatAddress(selectedConversation.peerLabel)}
                   </h2>
                   <p className="text-sm text-gray-500">End-to-end encrypted via XMTP</p>
                 </div>
@@ -848,15 +881,15 @@ function App() {
                 ) : (
                   <div className="space-y-4">
                     {messages.map((message, index) => {
-                      const isOwn = message.senderAddress?.toLowerCase() === walletAddress.toLowerCase();
+                      const isOwn = message.senderInboxId === xmtpClient?.inboxId;
                       const showDate = index === 0 || 
-                        formatDate(messages[index - 1]?.sent) !== formatDate(message.sent);
+                        formatDate(messages[index - 1]?.sentAt) !== formatDate(message.sentAt);
                       
                       return (
                         <React.Fragment key={message.id || index}>
                           {showDate && (
                             <div className="text-center text-xs text-gray-500 my-4">
-                              {formatDate(message.sent)}
+                              {formatDate(message.sentAt)}
                             </div>
                           )}
                           <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
@@ -867,7 +900,7 @@ function App() {
                             }`}>
                               <p className="text-sm break-words whitespace-pre-wrap">{getMessageText(message)}</p>
                               <p className={`text-xs mt-1 ${isOwn ? 'text-blue-200' : 'text-gray-500'}`}>
-                                {formatTime(message.sent)}
+                                {formatTime(message.sentAt)}
                               </p>
                             </div>
                           </div>
