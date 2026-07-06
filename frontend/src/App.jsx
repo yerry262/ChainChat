@@ -59,7 +59,7 @@ function App() {
     const initEnsProvider = async () => {
       for (const url of ENS_RPC_URLS) {
         try {
-          const mainnetProvider = new ethers.providers.JsonRpcProvider(url);
+          const mainnetProvider = new ethers.JsonRpcProvider(url);
           // Verify the endpoint actually responds before committing to it
           await mainnetProvider.getNetwork();
           if (!cancelled) {
@@ -214,7 +214,7 @@ function App() {
   // Get current network
   const getCurrentNetwork = async () => {
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum);
       const network = await provider.getNetwork();
       
       const networkNames = {
@@ -230,7 +230,7 @@ function App() {
       };
       
       return {
-        chainId: network.chainId,
+        chainId: Number(network.chainId),
         name: networkNames[network.chainId] || `Chain ${network.chainId}`,
         connected: true
       };
@@ -254,8 +254,8 @@ function App() {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       
       // Create provider and signer
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
       const address = await signer.getAddress();
       
       setWallet(signer);
@@ -286,7 +286,7 @@ function App() {
     getIdentifier: () => ({ identifier: address.toLowerCase(), identifierKind: IdentifierKind.Ethereum }),
     signMessage: async (message) => {
       const sig = await signer.signMessage(message);
-      return ethers.utils.arrayify(sig);
+      return ethers.getBytes(sig);
     },
   });
 
@@ -475,7 +475,7 @@ function App() {
           alert(`Failed to resolve ENS name: ${error.message}`);
           return;
         }
-      } else if (ethers.utils.isAddress(contactAddress)) {
+      } else if (ethers.isAddress(contactAddress)) {
         // Try reverse ENS lookup
         try {
           const reversedEns = await reverseEnsLookup(contactAddress);
