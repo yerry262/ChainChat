@@ -80,3 +80,6 @@ agenthub/agents/youtube/db
 # Build caches
 .cache/
 
+
+# CRA build output (deployed from gh-pages branch)
+frontend/build/

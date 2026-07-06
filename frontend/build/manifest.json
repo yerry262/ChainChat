@@ -1,9 +1,0 @@
-{
-  "short_name": "ChainChat",
-  "name": "ChainChat - Decentralized Messaging",
-  "description": "Secure, decentralized messaging on Ethereum powered by XMTP",
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#1e40af",
-  "background_color": "#1e3a8a"
-}
