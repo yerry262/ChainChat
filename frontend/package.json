@@ -33,6 +33,7 @@
     ]
   },
   "devDependencies": {
+    "ajv": "^8.20.0",
     "autoprefixer": "^10.4.20",
     "gh-pages": "^6.1.1",
     "postcss": "^8.4.49",
