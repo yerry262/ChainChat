@@ -22,7 +22,7 @@ A decentralized messaging application built on Ethereum, powered by the [XMTP Pr
 
 ## Technology Stack
 
-- **Frontend:** React 18, TailwindCSS
+- **Frontend:** React 18, Vite, TailwindCSS
 - **Messaging Protocol:** [XMTP V3](https://xmtp.org) via `@xmtp/browser-sdk` (MLS-based; the legacy V2 network was sunset in June 2025)
 - **Wallet Integration:** ethers.js
 - **ENS Resolution:** Ethereum Name Service support
@@ -47,10 +47,10 @@ cd ChainChat/frontend
 npm install
 
 # Start development server
-npm start
+npm run dev
 ```
 
-The app will be available at `http://localhost:3000`
+The app will be available at `http://localhost:5173`
 
 ### Building for Production
 
@@ -58,7 +58,11 @@ The app will be available at `http://localhost:3000`
 npm run build
 ```
 
+The production build is written to `frontend/dist/`. Preview it locally with `npm run preview`.
+
 ### Deploying to GitHub Pages
+
+Every push to `main` is built and deployed automatically by the GitHub Actions workflow in `.github/workflows/deploy.yml`. To deploy manually instead:
 
 ```bash
 npm run deploy
@@ -68,15 +72,19 @@ npm run deploy
 
 ```
 ChainChat/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml      # GitHub Pages deployment
 ├── frontend/
+│   ├── index.html          # Vite entry HTML
 │   ├── public/
-│   │   ├── index.html
 │   │   └── manifest.json
 │   ├── src/
-│   │   ├── App.js          # Main application component
+│   │   ├── App.jsx         # Main application component
 │   │   ├── App.css         # Styles
-│   │   ├── index.js        # Entry point
-│   │   └── index.css       # Global styles
+│   │   ├── main.jsx        # Entry point
+│   │   └── index.css       # Global styles (Tailwind)
+│   ├── vite.config.js
 │   └── package.json
 └── README.md
 ```

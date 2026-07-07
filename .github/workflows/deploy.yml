@@ -31,12 +31,10 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
-        env:
-          CI: false # react-scripts treats warnings as errors when CI=true
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: frontend/build
+          path: frontend/dist
 
   deploy:
     needs: build
